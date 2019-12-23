@@ -1,0 +1,60 @@
+<html>
+
+<head>
+    <title>this is a page for hijack to resolve two-way data-bind</title>
+    <meta name='charset' content='utf-8'>
+    </meta>
+    <meta name='keyword' content='vue two-way-data-bind'>
+    </meta>
+    <meta name='description' content='本页面用于实现注入形式的双向数据绑定'>
+    </meta>
+</head>
+
+<body>
+    <div id='app'>
+        <input data-change='abc'></input>
+        <input data-change='bcd'></input>
+        <div data-bind='abc'>123</div>
+        <div data-bind='bcd'>456</div>
+    </div>
+    <script>
+        function scan() {
+            const registor = {}
+            const inputNodes = new Map()
+            const bindNodes = new Map()
+                /**
+                 * 初步认为仅有input标签会改变值
+                 **/
+            let nodes = Array.from(document.getElementById('app').childNodes)
+
+            //遍历所有节点
+            for (let node of nodes) {
+                if (typeof node.getAttribute !== 'function') continue
+                let inputName = node.getAttribute('data-change')
+                let bindName = node.getAttribute('data-bind')
+                if (!!inputName) inputNodes.set(inputName, node)
+                else if (!!bindName) bindNodes.set(bindName, node)
+            }
+            inputNodes.forEach((value, key) => {
+                Object.defineProperty(registor, key, {
+                    get() {
+
+                    },
+                    set(val) {
+                        let currentNode = bindNodes.get(key)
+                        currentNode.innerHTML = val
+                    }
+                })
+                value.addEventListener('change', (event) => {
+                    registor[key] = event.target.value
+                })
+
+            })
+        }
+        scan()
+    </script>
+</body>
+
+
+
+</html>
